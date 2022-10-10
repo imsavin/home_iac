@@ -1,0 +1,32 @@
+- name: create folders
+  file:
+    path: "/mnt/{{ item }}"
+    state: directory
+  with_items: "{{ paths }}"
+  become: true
+
+- name: block bugged wifi
+  copy:
+    src: blacklist-iwlwifi.conf
+    dest: "/etc/modprobe.d/blacklist-iwlwifi.conf"
+  become: true
+
+
+- name: install apps
+  apt:
+    name: "{{ apps }}"
+    update_cache: true
+    state: present
+  become: true
+
+- name: mount nfs share
+  mount:
+    src: "media.savin.org.ru:/share/{{ item }}"
+    path: "/mnt/{{item}}"
+    boot: yes
+    state: mounted
+    fstype: nfs
+  become: true
+  with_items: "{{ paths }}"
+
+

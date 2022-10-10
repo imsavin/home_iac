@@ -1,0 +1,9 @@
+user: avial
+apps:
+  - kodi
+  - nfs-common
+  - git
+paths:
+  - Movies
+  - Shows
+  - Anime

@@ -1,0 +1,3 @@
+/share/Anime 192.168.1.0/24 (ro,sync,no_root_squash,no_subtree_check)
+/share/Shows 192.168.1.0/24 (ro,sync,no_root_squash,no_subtree_check)
+/share/Movies 192.168.1.0/24 (ro,sync,no_root_squash,no_subtree_check)
