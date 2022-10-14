@@ -1,0 +1,8 @@
+user: avial
+apps:
+  - easy-rsa
+  - openvpn
+  - nginx
+  - certbot
+  - python3-certbot-nginx 
+

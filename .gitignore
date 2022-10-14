@@ -1,6 +1,6 @@
 # Local .terraform directories
 **/.terraform/*
-
+*.ovpn
 # .tfstate files
 *.tfstate
 *.tfstate.*

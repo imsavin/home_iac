@@ -1,0 +1,44 @@
+- name: install apps
+  apt:
+    name: "{{ apps }}"
+    update_cache: true
+    state: present
+  become: true
+
+- name: copy openvpn config
+  copy:
+    src: homenet.ovpn
+    dest: "/etc/openvpn/client.conf"
+  become: true
+
+- name: Create NGINX Conf File For Nextcloud
+  become: yes
+  copy:
+    src: nextcloud.conf
+    dest:  /etc/nginx/sites-available/nextcloud.conf
+
+- name: Link Nextcloud  Reverse Proxy
+  become: yes
+  file:  
+    src: /etc/nginx/sites-available/nextcloud.conf 
+    dest: /etc/nginx/sites-enabled/nextcloud.conf
+    state: link
+
+- name: Make Sure NGINX Service Is Running
+  become: yes
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+  
+- name: openvpn
+  service: 
+    name: openvpn
+    state: restarted
+  become: true
+
+- name: systemd reload
+  systemd:
+    daemon_reload: yes
+  become: true
+
