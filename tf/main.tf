@@ -3,7 +3,7 @@ resource "proxmox_vm_qemu" "media" {
   name              = "media"
   target_node       = "pve"
 
-  clone             = "ubuntu"
+  clone             = "ubuntu2204"
 
   os_type           = "cloud-init"
   cores             = 4
@@ -17,9 +17,16 @@ resource "proxmox_vm_qemu" "media" {
   sshkeys           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDinnjV6O4zICVu2XzTFJpEsWp39gLkNI3kFkEbg7BissIhXPY+uH4CMGtUznltqPwpoBcomol4xHpdyRf+9yEsMbMy8V04BM0/LKdG+87F/aaHRRsOD8Lj0jlSzGMup694slxSJOnqzBHqSUV8r++zOa9p6zxR/0aWN3y+NbdtUPGCPGSRBgois2Kt9J5UzYVY0EjYrIPtSx+h/hwcE1TAVeMu2Mi3+8ntV0pVT2R1NVQdV0MruX8y16HsGx0+6pDFSaVAcLcPE9+2CbD5EKsxPk/w0u8iB71k1G2dFOBj2MhlL6GnfP3SSAaAjsHC+lWsnmltZkIG8Xt9UttUvb2d avial@darkstar"
   ciuser            = "avial"
   disk {
+    size            = "30G"
+    type            = "virtio"
+    storage         = "local-lvm"
+    }
+  disk {
     size            = "3072G"
     type            = "virtio"
     storage         = "local-lvm"
+    file            = "vm-103-disk-1"
+    volume          = "local-lvm:vm-103-disk-1"
     }
 
   network {
