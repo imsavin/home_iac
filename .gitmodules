@@ -1,0 +1,3 @@
+[submodule "ansible/slackware-bootstrap/slack-bootstrap-ansible/files/dotfiles"]
+	path = ansible/slackware-bootstrap/slack-bootstrap-ansible/files/dotfiles
+	url = https://github.com/imsavin/dotfiles

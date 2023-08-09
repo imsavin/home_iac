@@ -1,0 +1,6 @@
+all:
+  hosts:
+    slack-initial:
+      ansible_host: 
+  vars:
+    ansible_user: 

@@ -1,0 +1,267 @@
+- name: setting up slackpkg mirrors
+  replace:
+    path: /etc/slackpkg/mirrors
+    regexp: '# http://mirror.yandex.ru/slackware/slackware64-15.0/'
+    replace: 'http://mirror.yandex.ru/slackware/slackware64-15.0/'
+  become: true
+
+- name: setting up slackpkg config BATCH
+  replace:
+    path: /etc/slackpkg/slackpkg.conf 
+    regexp: 'BATCH=off'
+    replace: 'BATCH=on'
+  become: true
+
+- name: setting up slackpkg config DEFAULT_ANSWER
+  replace:
+    path: /etc/slackpkg/slackpkg.conf 
+    regexp: 'DEFAULT_ANSWER=n'
+    replace: 'DEFAULT_ANSWER=y'
+  become: true
+
+- name: setting up slackpkg config POSTINST
+  replace:
+    path: /etc/slackpkg/slackpkg.conf 
+    regexp: 'POSTINST=on'
+    replace: 'POSTINST=off'
+  become: true
+
+- name: update slackpkg repo info
+  shell: 'slackpkg update'
+  become: true
+
+- name: upgrade system
+  shell: 'slackpkg upgrade-all'
+  become: true
+  ignore_errors: true
+
+- name: install some needful packages
+  slackpkg: 
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items: "{{ slackpkg_packages_inst }}"
+
+- name: uninstall some annoying packages
+  slackpkg: 
+    name: "{{ item }}"
+    state: absent
+  become: true
+  with_items: "{{ slackpkg_packages_uninst }}"
+
+- name: update GRUB config
+  shell: 'grub-mkconfig -o /boot/grub/grub.cfg'
+  become: true
+
+- name: reboot
+  reboot:
+  become: true
+
+- name: create temp workdir
+  file:
+    path: "{{ tempdir }}"
+    state: directory
+  become: true
+
+- name: add Jenkins group
+  group:
+    name: jenkins
+    gid: 251
+  become: true
+
+- name: add Avahi group
+  group:
+    name: avahi
+    gid: 214
+  become: true
+
+- name: Add Jenkins user
+  user:
+    name: jenkins
+    comment: Jenkins User
+    uid: 251
+    group: jenkins
+    home: /var/lib/jenkins
+  become: true
+
+- name: Add Avahi user
+  user:
+    name: avahi
+    comment: Avahi User
+    uid: 214
+    group: avahi
+    home: /dev/null
+    shell: /bin/false 
+  become: true
+
+- name: get slackpkgplus
+  get_url:
+    url: "https://sourceforge.net/projects/slackpkgplus/files/{{ slackpkgplus }}"
+    dest: "{{ tempdir }}/{{ slackpkgplus }}"
+  become: true
+
+- name: install slackpkgplus
+  shell:
+    cmd: "upgradepkg --install-new --reinstall {{ slackpkgplus }}"
+    chdir: "{{ tempdir }}"
+  become: true
+
+- name: activate multilib
+  replace:
+    path: "/etc/slackpkg/slackpkgplus.conf"
+    regexp: '#PKGS_PRIORITY=\( multilib \)'
+    replace: |
+      PKGS_PRIORITY=( multilib )
+      MIRRORPLUS['multilib']=https://slackware.nl/people/alien/multilib/15.0/
+  become: true
+
+- name: install multilib
+  shell: |
+    slackpkg update gpg
+    slackpkg update
+    slackpkg install multilib
+    slackpkg upgrade-all
+  become: true
+  ignore_errors: true 
+
+- name: reboot
+  reboot:
+  become: true
+
+- name: get sbopkg 
+  get_url:
+    url: "https://github.com/sbopkg/sbopkg/releases/download/{{ sbopkg.split('-')[1] }}/{{sbopkg}}"
+    dest: "{{ tempdir }}/{{ sbopkg }}"
+  become: true
+
+- name: install sbopkg
+  shell:
+    cmd: "upgradepkg --install-new --reinstall {{ sbopkg }}"
+    chdir: "{{ tempdir }}"
+  become: true
+
+- name: get slackbuilds
+  shell: "sbopkg -rV SBo/15.0"
+  become: true
+  
+- name: generate queue files
+  shell: "sqg  -p {{ item | splitext | first }}"
+  become: true
+  args:
+    executable: /bin/bash
+  with_items: "{{ slackbuilds }}"
+
+- name: install slackbuilds
+  shell: "sbopkg -B -i {{ item }}"
+  become: true
+  with_items: "{{ slackbuilds }}"
+  args:
+    executable: /bin/bash
+
+- name: install lua libs for LMOD
+  shell:
+    cmd: "luarocks install {{ item }}"
+  become: true
+  with_items: "{{ lua_libraries }}"
+  
+- name: clone LMOD repo
+  git:
+    repo: "https://github.com/TACC/Lmod.git"
+    dest: "{{ tempdir }}/Lmod"
+  become: true 
+   
+- name: install LMOD
+  shell:
+    chdir: "{{ tempdir }}/Lmod"
+    cmd: |
+      eval $(luarocks path)
+      ./configure --prefix=/opt
+      make install
+  become: true
+
+- name: set i3 to use dbus-run-session
+  replace:
+    path: /usr/share/xsessions/i3.desktop
+    regexp: "Exec=i3"
+    replace: "Exec=dbus-run-session i3"
+  become: true
+ 
+- name: litte fix
+  replace:
+    path: /usr/share/xsessions/i3.desktop
+    regexp: "TryExec=dbus-run-session i3"
+    replace: "" 
+  become: true
+
+- name: disable SDDM OSD keyboard 
+  replace:
+    path: /etc/sddm.conf
+    regexp: "InputMethod=qtvirtualkeyboard"
+    replace: "InputMethod="
+  become: true
+
+- name: set system LANG
+  replace:
+    path: /etc/profile.d/lang.sh
+    regexp: "export LANG=en_US.UTF8"
+    replace: "export LANG=ru_RU.UTF8"
+  become: true
+
+- name: set default initlevel to 4
+  replace:
+    path: /etc/inittab
+    regexp: "id:3:initdefault:"
+    replace: "id:4:initdefault:"
+  become: true
+  
+- name: on X11 forwarding
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "#X11forwarding no"
+    replace: "X11forwarding yes"
+  become: true
+
+- name: copy dotfiles to user directory
+  copy: 
+    src: dotfiles/
+    dest: "/home/{{ user }}"
+
+- name: install Vundle
+  git:
+    repo: "https://github.com/VundleVim/Vundle.vim.git"
+    dest: "/home/{{ user }}/.vim/bundle/Vundle.vim"
+
+- name: enable bluetooth service
+  file:
+    path: /etc/rc.d/rc.bluetooth
+    mode: '0755'
+  become: true
+ 
+- name: enable libvirt
+  file:
+    path: /etc/rc.d/rc.libvirt
+    mode: '0755'
+  become: true
+  
+- name: enable vnstat
+  file:
+    path: /etc/rc.d/rc.vnstat
+    mode: '0755'
+  become: true
+  
+- name: modifying rc.local
+  blockinfile:
+    path: /etc/rc.d/rc.local
+    insertafter: "# commands in there."
+    block: | 
+      if [ -x /etc/rc.d/rc.vnstat ]; then
+         /etc/rc.d/rc.vnstat start
+      fi
+      if [ -x /etc/rc.d/rc.libvirt ]; then
+         /etc/rc.d/rc.libvirt start
+      fi
+  become: true
+     
+- name: final reboot
+  reboot: 
+  become: true
