@@ -1,4 +1,4 @@
-user: isavin
+user: avial
 slackpkgplus: slackpkg+-1.8.0-noarch-7mt.txz
 sbopkg: sbopkg-0.38.2-noarch-1_wsr.tgz 
 tempdir: /tmp/ansible_tempdir
@@ -13,12 +13,14 @@ slackpkg_packages_inst:
   - freerdp
   - sddm
   - blueman
+  - tigervnc
 slackpkg_packages_uninst:
   - QtAV
   - joe
   - sddm-kcm
 slackbuilds:
   - mpv.sqf
+  - sshpass
   - nnn
   - tig 
   - luarocks.sqf
@@ -70,6 +72,13 @@ slackbuilds:
   - udevil
   - vnstat
   - zulu-openjdk11
+  - ldapvi
+  - password-store.sqf
+  - google-go-lang
+  - antiword
+  - docx2txt
+  - odt2txt
+  - testdisk
 lua_libraries:
   - luaposix
   - lua-term
