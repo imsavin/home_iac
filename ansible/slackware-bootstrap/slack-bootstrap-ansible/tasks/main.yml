@@ -1,3 +1,15 @@
+- name: Pre-run cleaning step I
+  file:
+    path: /tmp/*.tgz
+    state: absent
+  become: true
+
+- name: Pre-run cleaning step II
+  ansible.builtin.file:
+    path: /tmp/SBo
+    state: absent
+  become: true
+
 - name: setting up slackpkg mirrors
   replace:
     path: /etc/slackpkg/mirrors
@@ -48,6 +60,10 @@
     state: absent
   become: true
   with_items: "{{ slackpkg_packages_uninst }}"
+
+    #- name: create mkinitrd
+    #  shell: 'eval $(/usr/share/mkinitrd/mkinitrd_command_generator.sh -k $(ls /var/log/packages/kernel-generic-* | cut -d "-" -f 3) -r)'
+    #  become: true
 
 - name: update GRUB config
   shell: 'grub-mkconfig -o /boot/grub/grub.cfg'
@@ -152,11 +168,17 @@
   with_items: "{{ slackbuilds }}"
 
 - name: install slackbuilds
-  shell: "sbopkg -B -i {{ item }}"
+  shell: "sbopkg -B -k -i {{ item }}"
   become: true
   with_items: "{{ slackbuilds }}"
   args:
     executable: /bin/bash
+
+- name: get russian lang model for Tesseract OCR 
+  get_url:
+    url: "https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata"
+    dest: "/usr/share/tessdata/rus.traineddata"
+  become: true
 
 - name: install lua libs for LMOD
   shell:
@@ -226,6 +248,25 @@
     src: dotfiles/
     dest: "/home/{{ user }}"
 
+- name: install adblock python package
+  pip:  
+    name: adblock
+    executable: pip3
+
+- name: bootstrap EasyBuild
+  pip: 
+    name: easybuild
+    virtualenv: /tmp/EB
+    virtualenv_command: python3 -m venv
+  ignore_errors: true 
+
+- name: install EasyBuild 
+  shell: |
+    source /opt/lmod/lmod/init/bash 
+    source /tmp/EB/bin/activate
+    eb --prefix /home/{{user}}/.apps --install-latest-eb-release
+  ignore_errors: true 
+
 - name: install Vundle
   git:
     repo: "https://github.com/VundleVim/Vundle.vim.git"
@@ -260,6 +301,26 @@
       if [ -x /etc/rc.d/rc.libvirt ]; then
          /etc/rc.d/rc.libvirt start
       fi
+  become: true
+
+- name: create service vim dirs
+  file:
+    path: "/home/{{  user  }}/.vim/{{ item }}"
+    state: directory
+  with_items: 
+    - bkp
+    - undo 
+
+- name: Post-run cleaning step I
+  ansible.builtin.file:
+    path: /tmp/*.tgz
+    state: absent
+  become: true
+
+- name: Post-run cleaning step II
+  ansible.builtin.file:
+    path: /tmp/SBo
+    state: absent
   become: true
      
 - name: final reboot

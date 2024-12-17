@@ -1,6 +1,6 @@
 all:
   hosts:
     slack-initial:
-      ansible_host: 127.0.0.1
+      ansible_host:
   vars:
-    ansible_user: avial
+    ansible_user:

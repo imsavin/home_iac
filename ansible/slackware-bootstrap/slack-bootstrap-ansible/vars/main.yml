@@ -1,9 +1,10 @@
-user: avial
+user: isavin
 slackpkgplus: slackpkg+-1.8.0-noarch-7mt.txz
 sbopkg: sbopkg-0.38.2-noarch-1_wsr.tgz 
 tempdir: /tmp/ansible_tempdir
 slackpkg_packages_inst:
   - bash-completion
+  - sane
   - network-manager-applet
   - libnma
   - mozilla-firefox
@@ -11,9 +12,11 @@ slackpkg_packages_inst:
   - hunspell
   - aspell-ru
   - freerdp
+  - extra-cmake-modules
   - sddm
   - blueman
   - tigervnc
+  - sane
 slackpkg_packages_uninst:
   - QtAV
   - joe
@@ -30,10 +33,9 @@ slackbuilds:
   - lxappearance
   - geany-plugins.sqf
   - zathura-djvu.sqf
-  - qutebrowser.sqf
+  - qutebrowser-bin.sqf
   - anydesk.sqf
   - task.sqf
-  - pcmanfm.sqf
   - file-roller
   - p7zip
   - rofi.sqf
@@ -52,12 +54,14 @@ slackbuilds:
   - FontAwesome
   - wps-office-dicts.sqf
   - ncdu
-  - spotify.sqf
+  - squashfuse
+    # - spotify.sqf
   - arandr
   - telegram
   - teams
   - slack
   - picom.sqf
+  - gimagereader.sqf
   - gxkb
   - avahi.sqf
   - moka-icon-theme.sqf
@@ -73,12 +77,19 @@ slackbuilds:
   - vnstat
   - zulu-openjdk11
   - ldapvi
+  - zzzfm
+  - clifm
   - password-store.sqf
   - google-go-lang
   - antiword
   - docx2txt
   - odt2txt
   - testdisk
+  - fuse-exfat
+  - cgdb
+  - i3lock.sqf
+  - scrot.sqf
+  - rtorrent.sqf
 lua_libraries:
   - luaposix
   - lua-term
