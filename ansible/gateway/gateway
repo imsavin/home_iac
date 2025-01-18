@@ -1,4 +1,0 @@
-all:
-  hosts:
-    gateway:
-      ansible_host: 
